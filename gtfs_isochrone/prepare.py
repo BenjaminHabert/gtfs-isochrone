@@ -24,6 +24,8 @@ def prepare_data_in_gtfs_folder(folder):
     load.store_trips_dates(trips_dates, folder)
 
     # stoptimes
+    stoptimes = load.load_raw_stoptimes(folder)
+    load.store_stoptimes(stoptimes, folder)
 
 
 def prepare_trips_dates(trips, calendar_dates):

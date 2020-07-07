@@ -9,11 +9,12 @@ def load_prepared_data(gtfs_folder):
         "stops.p",
         "durations.p",
         "trips_dates.p",
+        "stoptimes.p",
     ]
 
-    dataframes = map(
-        lambda name: pd.read_pickle(os.path.join(gtfs_folder, name)), files_to_load
-    )
+    dataframes = [
+        pd.read_pickle(os.path.join(gtfs_folder, name)) for name in files_to_load
+    ]
     return dataframes
 
 
@@ -32,6 +33,10 @@ def store_stops(stops, gtfs_folder):
 
 def store_trips_dates(trips_dates, gtfs_folder):
     _store(trips_dates, gtfs_folder, "trips_dates.p")
+
+
+def store_stoptimes(stoptimes, gtfs_folder):
+    _store(stoptimes, gtfs_folder, "stoptimes.p")
 
 
 def load_raw_stops(gtfs_folder):
@@ -57,3 +62,13 @@ def load_raw_calendar_dates(gtfs_folder):
 def load_raw_trips(gtfs_folder):
     path_trips = os.path.join(gtfs_folder, "trips.txt")
     return pd.read_csv(path_trips, usecols=["service_id", "trip_id"], dtype="object")
+
+
+def load_raw_stoptimes(gtfs_folder):
+    path_stoptimes = os.path.join(gtfs_folder, "stop_times.txt")
+    stoptimes = pd.read_csv(
+        path_stoptimes, usecols=["trip_id", "stop_id", "arrival_time"], dtype="object",
+    )
+    stoptimes["arrival_time"] = pd.TimedeltaIndex(stoptimes["arrival_time"]).round("S")
+    stoptimes = stoptimes.loc[:, ["trip_id", "stop_id", "arrival_time"]]
+    return stoptimes
