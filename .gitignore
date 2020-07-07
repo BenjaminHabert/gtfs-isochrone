@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# make-related
+install
+
+# local data
+data
+
+# ide
+.vscode
