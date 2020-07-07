@@ -2,6 +2,24 @@
 create isochrone travel maps from gtfs data
 
 
+# Usage
+
+- locate a folder containing GTFS data as csv files. Required are:
+    - stops.txt
+    
+```
+git clone https://github.com/BenjaminHabert/gtfs-isochrone
+cd gtfs-isochrone
+
+# create python3 virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+python run.py prepare path/to/gtfs/folder
+
+```
+
 
 # Notes
 

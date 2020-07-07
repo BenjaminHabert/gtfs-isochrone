@@ -1,6 +1,7 @@
 # code
 pandas
 shapely
+click
 
 # dev
 black
