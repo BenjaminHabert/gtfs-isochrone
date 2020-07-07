@@ -1,8 +1,12 @@
 # code
 pandas
 shapely
+click
 
 # dev
 black
 flake8
+
+# exploration
 jupyter
+matplotlib
