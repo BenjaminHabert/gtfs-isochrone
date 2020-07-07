@@ -8,6 +8,49 @@ EARTH_RADIUS_METERS = 6_371_000
 WALKING_SPEED_M_S = 1.4
 
 
+def prepare_data_for_query(data, start_datetime, end_datetime):
+    def print_shapes(data):
+        for field in data._fields:
+            print(field, data.__getattribute__(field).shape)
+
+    print_shapes(data)
+    # data = load.copy_data(data)
+    stops = data.stops.copy()
+    durations = data.durations.copy()
+    trips_dates = data.trips_dates.copy()
+    stoptimes = data.stoptimes.copy()
+
+    # only trips on that day
+    trips_dates = trips_dates.loc[trips_dates["date"].dt.date == start_datetime.date()]
+
+    # only stoptimes with that trips
+    stoptimes = stoptimes.merge(trips_dates, on="trip_id", how="inner")
+    # add datetime and filter relevent stoptimes
+    stoptimes["datetime"] = stoptimes["date"] + stoptimes["arrival_time"]
+    stoptimes = stoptimes.loc[
+        (stoptimes["datetime"] > start_datetime)
+        & (stoptimes["datetime"] < end_datetime),
+        ["trip_id", "stop_id", "datetime"],
+    ]
+
+    # only valid stops
+    stops = stops.loc[stops["stop_id"].isin(stoptimes["stop_id"].unique())]
+
+    # only valid durations
+    durations = durations.loc[
+        (durations["walk_duration"] < (end_datetime - start_datetime))
+        & durations["stop_id_from"].isin(stops["stop_id"])
+        & durations["stop_id_to"].isin(stops["stop_id"])
+    ]
+
+    new_data = load.Data(
+        stops=stops, durations=durations, trips_dates=trips_dates, stoptimes=stoptimes
+    )
+
+    print_shapes(new_data)
+    return new_data
+
+
 def prepare_data_in_gtfs_folder(folder):
     # stops
     stops = load.load_raw_stops(folder)
