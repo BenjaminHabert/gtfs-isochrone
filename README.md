@@ -29,8 +29,8 @@ python run.py prepare path/to/gtfs/folder
 - [x] main function with input params
 - [x] initialize data based on input params
 - [ ] find stops and arrival times through network
-- [ ] build circle shapes and assemble them
-- [ ] build geojson
+- [x] build circle shapes and assemble them
+- [x] build geojson
 - [ ] wrap main function with an api
 
 
