@@ -9,12 +9,29 @@ WALKING_SPEED_M_S = 1.4
 
 
 def prepare_data_in_gtfs_folder(folder):
+    # stops
     stops = load.load_raw_stops(folder)
     durations = prepare_stop_walk_duration(stops)
+
+    load.store_stops(stops, folder)
     load.store_durations(durations, folder)
+
+    # trip dates
+    calendar_dates = load.load_raw_calendar_dates(folder)
+    trips = load.load_raw_trips(folder)
+    trips_dates = prepare_trips_dates(trips, calendar_dates)
+
+    load.store_trips_dates(trips_dates, folder)
+
+    # stoptimes
+
+
+def prepare_trips_dates(trips, calendar_dates):
+    return trips.merge(calendar_dates, on="service_id").loc[:, ["trip_id", "date"]]
 
 
 def prepare_stop_walk_duration(stops):
+    stops = stops.copy()
     stops["fake"] = True
     distances = stops.merge(stops, on="fake", suffixes=["_from", "_to"])
     lat1, lat2, lon1, lon2 = map(
