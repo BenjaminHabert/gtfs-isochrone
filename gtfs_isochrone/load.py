@@ -1,21 +1,17 @@
 import os
+from collections import namedtuple
 
 import pandas as pd
 import numpy as np
 
+Data = namedtuple("Data", ["stops", "durations", "trips_dates", "stoptimes"])
+
 
 def load_prepared_data(gtfs_folder):
-    files_to_load = [
-        "stops.p",
-        "durations.p",
-        "trips_dates.p",
-        "stoptimes.p",
-    ]
-
-    dataframes = [
-        pd.read_pickle(os.path.join(gtfs_folder, name)) for name in files_to_load
-    ]
-    return dataframes
+    paths = {field: os.path.join(gtfs_folder, field + ".p") for field in Data._fields}
+    dataframes = {field: pd.read_pickle(path) for field, path in paths.items()}
+    data = Data(**dataframes)
+    return data
 
 
 def _store(df, folder, name):
