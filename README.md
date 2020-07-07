@@ -26,8 +26,8 @@ python run.py prepare path/to/gtfs/folder
 ## Dev Todo-list
 
 - [x] prepare data once
-- [ ] main function with input params
-- [ ] initialize data based on input params
+- [x] main function with input params
+- [x] initialize data based on input params
 - [ ] find stops and arrival times through network
 - [ ] build circle shapes and assemble them
 - [ ] build geojson
