@@ -1,0 +1,8 @@
+# code
+pandas
+shapely
+
+# dev
+black
+flake8
+jupyter
