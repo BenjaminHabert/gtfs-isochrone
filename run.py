@@ -23,7 +23,7 @@ def demo():
     lat = 47.900792
     lon = 1.903623
     start_datetime = datetime.datetime(2020, 7, 2, 14)
-    max_duration_seconds = 20 * 60
+    max_duration_seconds = 3 * 60
     print(
         compute_isochrone(gtfs_folder, lat, lon, start_datetime, max_duration_seconds)
     )
