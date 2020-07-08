@@ -80,11 +80,25 @@ def prepare_stop_walk_duration(stops):
     stops["fake"] = True
     distances = stops.merge(stops, on="fake", suffixes=["_from", "_to"])
     lat1, lat2, lon1, lon2 = map(
-        lambda col: np.radians(distances[col]),
+        lambda col: distances[col],
         ["stop_lat_from", "stop_lat_to", "stop_lon_from", "stop_lon_to"],
     )
 
-    distances["distance_m"] = (
+    distances["walk_duration"] = walk_duration(lat1, lat2, lon1, lon2)
+
+    distances = distances.loc[
+        distances["stop_id_from"] != distances["stop_id_to"],
+        ["stop_id_from", "stop_id_to", "walk_duration"],
+    ]
+    return distances
+
+
+def distance_meters(lat1, lat2, lon1, lon2):
+    """coords in degrees"""
+    lat1, lat2, lon1, lon2 = [np.radians(col) for col in [lat1, lat2, lon1, lon2]]
+
+    # https://en.wikipedia.org/wiki/Haversine_formula
+    distances_meters = (
         2
         * EARTH_RADIUS_METERS
         * np.arcsin(
@@ -94,13 +108,17 @@ def prepare_stop_walk_duration(stops):
             )
         )
     )
+    return distances_meters
 
-    distances["walk_duration"] = pd.TimedeltaIndex(
-        distances["distance_m"] / WALKING_SPEED_M_S, "seconds"
+
+def walk_duration(lat1, lat2, lon1, lon2):
+    distances_meters = distance_meters(lat1, lat2, lon1, lon2)
+    walk_duration_seconds = pd.TimedeltaIndex(
+        distances_meters / WALKING_SPEED_M_S, "seconds"
     ).round("S")
+    return walk_duration_seconds
 
-    distances = distances.loc[
-        distances["stop_id_from"] != distances["stop_id_to"],
-        ["stop_id_from", "stop_id_to", "walk_duration"],
-    ]
-    return distances
+
+def arrival_datetime(start_datetime, lat1, lat2, lon1, lon2):
+    walk_duration_seconds = walk_duration(lat1, lat2, lon1, lon2)
+    return walk_duration_seconds + start_datetime
