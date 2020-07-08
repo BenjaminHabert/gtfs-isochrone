@@ -9,11 +9,7 @@ WALKING_SPEED_M_S = 1.4
 
 
 def prepare_data_for_query(data, start_datetime, end_datetime):
-    def print_shapes(data):
-        for field in data._fields:
-            print(field, data.__getattribute__(field).shape)
 
-    print_shapes(data)
     # data = load.copy_data(data)
     stops = data.stops.copy()
     durations = data.durations.copy()
@@ -47,7 +43,6 @@ def prepare_data_for_query(data, start_datetime, end_datetime):
         stops=stops, durations=durations, trips_dates=trips_dates, stoptimes=stoptimes
     )
 
-    print_shapes(new_data)
     return new_data
 
 

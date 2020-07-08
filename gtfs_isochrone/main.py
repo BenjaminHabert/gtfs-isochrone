@@ -19,11 +19,7 @@ def compute_isochrone_with_data(data, lat, lon, start_datetime, max_duration_sec
 
     data = prepare.prepare_data_for_query(data, start_datetime, end_datetime)
     points = travel.compute_arrival_points(data, lat, lon, start_datetime, end_datetime)
-
-    # return points
-
     distances = walk_from_points(points, end_datetime)
-    print(distances)
     geojson = build_isochrone_from_points(distances)
     return geojson
 
