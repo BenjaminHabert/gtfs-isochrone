@@ -12,6 +12,7 @@ git clone https://github.com/BenjaminHabert/gtfs-isochrone
 cd gtfs-isochrone
 
 # create python3 virtual environment
+apt-get install build-essential python3-dev
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -44,6 +45,42 @@ python run.py server data/orleans/
 - [x] build circle shapes and assemble them
 - [x] build geojson
 - [x] wrap main function with an api
+
+## Deployment notes
+
+I use uwsgi to run the file `server.py` as explained [here](https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html).
+
+```
+nohup uwsgi --socket 127.0.0.1:3031 --wsgi-file server.py --master --processes 3 > uwsgi.log &
+```
+
+I changed nginx configuration as follow (`/etc/nginx/site-available/default`):
+
+```
+server {
+
+
+	location /gtfs-isochrone/ {
+		# remove this part of the url
+		# rewrite ^/gtfs-isochrone(.*)$ $1 last;
+		include uwsgi_params;
+		uwsgi_pass 127.0.0.1:3031;
+	}
+
+
+    # ...
+    # listen 443 ...
+}
+```
+
+However in doing so, the bottle server did not recognize the route (which was now `/gtfs-isochrone/isochrone?`). A temporary
+fix was to modify the file `server.py` as follows:
+
+```python
+@app.route("/gtfs-isochrone/isochrone", method="GET")
+def isochrone():
+    ...
+```
 
 
 ## initial pseudo-code algo
