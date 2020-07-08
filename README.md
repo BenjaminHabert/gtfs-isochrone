@@ -16,8 +16,20 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-python run.py prepare path/to/gtfs/folder
+# download and extract data
+mkdir -p data/orleans/
+curl https://data.orleans-metropole.fr/api/datasets/1.0/donnees-du-reseau-tao-au-format-gtfs/alternative_exports/export_gtfs_du_29_06_au_30_08_20_zip > data/orleans.zip
+unzip data/orleans.zip -d data/orleans/
 
+# prepare the data (required only once)
+python run.py prepare data/orleans/
+
+# run the development server
+python run.py server data/orleans/
+
+# get geojson from a query on http://localhost:9090/isochrone
+# example of valid query with this dataset :
+# -> http://localhost:9090/isochrone?lat=47.9007&lon=1.9036&duration=60&start=2020-07-02T13:00:00
 ```
 
 
@@ -31,7 +43,7 @@ python run.py prepare path/to/gtfs/folder
 - [x] find stops and arrival times through network
 - [x] build circle shapes and assemble them
 - [x] build geojson
-- [ ] wrap main function with an api
+- [x] wrap main function with an api
 
 
 ## initial pseudo-code algo

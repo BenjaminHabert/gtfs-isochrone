@@ -3,12 +3,14 @@ pandas
 shapely
 click
 geopandas
+bottle
+uwsgi
 
 # dev
 black
 flake8
 
-# exploration
+# exploration and demo
 jupyter
 matplotlib
 folium
