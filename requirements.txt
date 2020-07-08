@@ -4,6 +4,7 @@ shapely
 click
 geopandas
 bottle
+uwsgi
 
 # dev
 black
