@@ -31,7 +31,7 @@ python run.py prepare path/to/gtfs/folder
 - [x] find stops and arrival times through network
 - [x] build circle shapes and assemble them
 - [x] build geojson
-- [ ] wrap main function with an api
+- [x] wrap main function with an api
 
 
 ## initial pseudo-code algo
