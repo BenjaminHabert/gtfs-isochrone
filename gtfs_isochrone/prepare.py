@@ -5,7 +5,7 @@ from . import load
 
 
 EARTH_RADIUS_METERS = 6_371_000
-WALKING_SPEED_M_S = 1.4
+WALKING_SPEED_M_S = 1.1
 
 
 def prepare_data_for_query(data, start_datetime, end_datetime):

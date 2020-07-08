@@ -54,7 +54,7 @@ def build_isochrone_from_points(distances):
     shape = shape.to_crs(lonlat_CRS)
 
     # TEMP: show points of stops (and origin)
-    shape = shape.append(points.geometry)
+    # shape = shape.append(points.geometry)
 
     # convert back to lon, lat to create the geojson
     geojson = json.loads(shape.to_json())
