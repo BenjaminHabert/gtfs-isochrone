@@ -86,46 +86,47 @@ server {
 ```
 
 
-## initial pseudo-code algo
+## algorithm pseudo-code
 
 ```
 PREPARE
 - add date to stoptimes using trips + calandar_dates
-- walk time between all stops
+- compute walk duration between all stops
 
 INITIALIZE
-- input: position, start-time, max duration -> end-time
+- input: start lat, start lon, start-time, max duration -> end-time
 - filter stoptimes between start-time and end-time
-- filter: walk time too long
-- all stops -> arrival time (walking); select where arrival < end-time
+- filter: walk duration too long
+
+START
+- from starting position, get all reachable stops. Columns:
+    - stop_id
+    - arrival_time (ie start time + walking duration to the stop)
 
 LOOP
-- selected stop -> find stoptimes
+- from selected stops -> find reachable stoptimes
+    - same stop id
     - end-time > trip-stoptime > arrival_time
-- find trip:
-    - first stoptime of same trip
+    - if no reachable stoptimes was found: exit loop
+- expand reachable stoptimes
+    - next stoptimes of the allready found trips
 - split stoptimes:
-    - A: with selected trip, time >= first stoptime of trip
+    - A: those that were marked reachable
     - B: all others, kept for next loop
 - from group A stoptimes:
-    - drop duplicate stop: keep earliest
-    - remove if > end-time
-    - remove if later than existing stop (???)
-- filter walk time
-    - duration lower than maximum walk time possible (earliest stoptimes - end-time)
-- walk from the new stops to all stops -> new arrival times
-    - drop duplicate stop: keep earliest
-    - remove if > end-time
-    - remove if later than existing stop
-- if empty: FINISHED
+    - drop duplicate stops: keep earliest arrival_time
+- walk from the new stops to all possible stops -> new arrival times
+    - remove if arrival time > end-time
+    - drop duplicated stops: keep earliest arrival_time
+- we now have a new list of reachable stops (stop_id, arrival_time)
+- if it is the same as before: FINISHED
 - else:
-    - add to existing stops
-    - restart loop
+    - restart loop with these new selected stops
 
 
 CONCLUDE
 - we have list of (stop, shortest_arrival_time)
-- create circle with walking distance for each
+- create circle with radius = walking distance for each stop (shapely.buffer)
 - add circle from start position
-- merge all circles in a single shape
+- merge all circles in a single shape (shapely.union)
 ```
