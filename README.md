@@ -1,11 +1,19 @@
 # gtfs-isochrone
-create isochrone travel maps from gtfs data
+
+create isochrone geojson from gtfs data
+
+[view demo](https://benjexperiments.tech/orleans/)
+
+![map of Orleans with isochrone shapes](screenshot.png)
 
 
 # Usage
 
 - locate a folder containing GTFS data as csv files. Required are:
     - stops.txt
+    - calendar_dates.txt
+    - trips.txt
+    - stop_times.txt
     
 ```
 git clone https://github.com/BenjaminHabert/gtfs-isochrone
@@ -33,10 +41,24 @@ python run.py server data/orleans/
 # -> http://localhost:9090/isochrone?lat=47.9007&lon=1.9036&duration=60&start=2020-07-02T13:00:00
 ```
 
+# Deployment
+
+Manual deployment on AWS EC2:
+
+```
+git checkout master
+git pull
+sudo ln -s /home/ubuntu/gtfs-isochrone/api.nginx.conf /etc/nginx/sites-available/apps/orleans-api.conf
+sudo nginx -s reload
+bash start_server.sh
+```
+
 
 # Notes
 
+
 ## Deployment notes
+
 
 I use uwsgi to run the file `server.py` as explained [here](https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html).
 
