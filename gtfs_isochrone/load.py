@@ -45,6 +45,16 @@ def load_raw_stops(gtfs_folder):
     )
 
 
+def load_raw_routes(gtfs_folder):
+    routes_path = os.path.join(gtfs_folder, "routes.txt")
+
+    return pd.read_csv(
+        routes_path,
+        usecols=["route_id", "route_type"],
+        dtype={"route_id": "object", "route_type": np.int16},
+    ).drop_duplicates()
+
+
 def load_raw_calendar_dates(gtfs_folder):
     path_calendar_dates = os.path.join(gtfs_folder, "calendar_dates.txt")
     return pd.read_csv(
@@ -57,7 +67,9 @@ def load_raw_calendar_dates(gtfs_folder):
 
 def load_raw_trips(gtfs_folder):
     path_trips = os.path.join(gtfs_folder, "trips.txt")
-    return pd.read_csv(path_trips, usecols=["service_id", "trip_id"], dtype="object")
+    return pd.read_csv(
+        path_trips, usecols=["route_id", "service_id", "trip_id"], dtype="object"
+    )
 
 
 def load_raw_stoptimes(gtfs_folder):

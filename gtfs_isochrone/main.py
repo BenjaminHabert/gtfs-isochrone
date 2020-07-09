@@ -14,10 +14,14 @@ def compute_isochrone(gtfs_folder, lat, lon, start_datetime, max_duration_second
     )
 
 
-def compute_isochrone_with_data(data, lat, lon, start_datetime, max_duration_seconds):
+def compute_isochrone_with_data(
+    data, lat, lon, start_datetime, max_duration_seconds, use_bus=True, use_tram=True
+):
     end_datetime = start_datetime + datetime.timedelta(seconds=max_duration_seconds)
 
-    data = prepare.prepare_data_for_query(data, start_datetime, end_datetime)
+    data = prepare.prepare_data_for_query(
+        data, start_datetime, end_datetime, use_bus, use_tram
+    )
     points = travel.compute_arrival_points(data, lat, lon, start_datetime, end_datetime)
     distances = walk_from_points(points, end_datetime)
     geojson = build_isochrone_from_points(distances)

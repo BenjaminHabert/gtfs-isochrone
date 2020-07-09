@@ -8,7 +8,7 @@ EARTH_RADIUS_METERS = 6_371_000
 WALKING_SPEED_M_S = 1.1
 
 
-def prepare_data_for_query(data, start_datetime, end_datetime):
+def prepare_data_for_query(data, start_datetime, end_datetime, use_bus, use_tram):
 
     # data = load.copy_data(data)
     stops = data.stops.copy()
@@ -18,6 +18,12 @@ def prepare_data_for_query(data, start_datetime, end_datetime):
 
     # only trips on that day
     trips_dates = trips_dates.loc[trips_dates["date"].dt.date == start_datetime.date()]
+    valid_routes = []
+    if use_bus:
+        valid_routes.append(3)
+    if use_tram:
+        valid_routes.append(0)
+    trips_dates = trips_dates.loc[trips_dates["route_type"].isin(valid_routes)]
 
     # only stoptimes with that trips
     stoptimes = stoptimes.merge(trips_dates, on="trip_id", how="inner")
@@ -54,10 +60,11 @@ def prepare_data_in_gtfs_folder(folder):
     load.store_stops(stops, folder)
     load.store_durations(durations, folder)
 
-    # trip dates
+    # trip dates with route type
     calendar_dates = load.load_raw_calendar_dates(folder)
     trips = load.load_raw_trips(folder)
-    trips_dates = prepare_trips_dates(trips, calendar_dates)
+    routes = load.load_raw_routes(folder)
+    trips_dates = prepare_trips_dates(trips, calendar_dates, routes)
 
     load.store_trips_dates(trips_dates, folder)
 
@@ -66,8 +73,12 @@ def prepare_data_in_gtfs_folder(folder):
     load.store_stoptimes(stoptimes, folder)
 
 
-def prepare_trips_dates(trips, calendar_dates):
-    return trips.merge(calendar_dates, on="service_id").loc[:, ["trip_id", "date"]]
+def prepare_trips_dates(trips, calendar_dates, routes):
+    return (
+        trips.merge(calendar_dates, on="service_id")
+        .merge(routes, on="route_id")
+        .loc[:, ["trip_id", "route_type", "date"]]
+    )
 
 
 def prepare_stop_walk_duration(stops):
