@@ -1,17 +1,26 @@
 # gtfs-isochrone
-create isochrone travel maps from gtfs data
+
+create isochrone geojson from gtfs data
+
+[view demo](https://benjexperiments.tech/orleans/)
+
+![map of Orleans with isochrone shapes](screenshot.png)
 
 
 # Usage
 
 - locate a folder containing GTFS data as csv files. Required are:
     - stops.txt
+    - calendar_dates.txt
+    - trips.txt
+    - stop_times.txt
     
 ```
 git clone https://github.com/BenjaminHabert/gtfs-isochrone
 cd gtfs-isochrone
 
 # create python3 virtual environment
+apt-get install build-essential python3-dev
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -32,60 +41,92 @@ python run.py server data/orleans/
 # -> http://localhost:9090/isochrone?lat=47.9007&lon=1.9036&duration=60&start=2020-07-02T13:00:00
 ```
 
+# Deployment
+
+Manual deployment on AWS EC2:
+
+```
+git checkout master
+git pull
+sudo ln -s /home/ubuntu/gtfs-isochrone/api.nginx.conf /etc/nginx/sites-available/apps/orleans-api.conf
+sudo nginx -s reload
+bash start_server.sh
+```
+
 
 # Notes
 
-## Dev Todo-list
 
-- [x] prepare data once
-- [x] main function with input params
-- [x] initialize data based on input params
-- [x] find stops and arrival times through network
-- [x] build circle shapes and assemble them
-- [x] build geojson
-- [x] wrap main function with an api
+## Deployment notes
 
 
-## initial pseudo-code algo
+I use uwsgi to run the file `server.py` as explained [here](https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html).
+
+```
+nohup uwsgi --socket 127.0.0.1:3031 --wsgi-file server.py --master --processes 3 > uwsgi.log &
+```
+
+I changed nginx configuration as follow (`/etc/nginx/site-available/default`):
+
+```
+server {
+
+
+	location /gtfs-isochrone/ {
+		# remove this part of the url
+		rewrite ^/gtfs-isochrone(.*)$ $1 break;
+		include uwsgi_params;
+		uwsgi_pass 127.0.0.1:3031;
+	}
+
+
+    # ...
+    # listen 443 ...
+}
+```
+
+
+## algorithm pseudo-code
 
 ```
 PREPARE
 - add date to stoptimes using trips + calandar_dates
-- walk time between all stops
+- compute walk duration between all stops
 
 INITIALIZE
-- input: position, start-time, max duration -> end-time
+- input: start lat, start lon, start-time, max duration -> end-time
 - filter stoptimes between start-time and end-time
-- filter: walk time too long
-- all stops -> arrival time (walking); select where arrival < end-time
+- filter: walk duration too long
+
+START
+- from starting position, get all reachable stops. Columns:
+    - stop_id
+    - arrival_time (ie start time + walking duration to the stop)
 
 LOOP
-- selected stop -> find stoptimes
+- from selected stops -> find reachable stoptimes
+    - same stop id
     - end-time > trip-stoptime > arrival_time
-- find trip:
-    - first stoptime of same trip
+    - if no reachable stoptimes was found: exit loop
+- expand reachable stoptimes
+    - next stoptimes of the allready found trips
 - split stoptimes:
-    - A: with selected trip, time >= first stoptime of trip
+    - A: those that were marked reachable
     - B: all others, kept for next loop
 - from group A stoptimes:
-    - drop duplicate stop: keep earliest
-    - remove if > end-time
-    - remove if later than existing stop (???)
-- filter walk time
-    - duration lower than maximum walk time possible (earliest stoptimes - end-time)
-- walk from the new stops to all stops -> new arrival times
-    - drop duplicate stop: keep earliest
-    - remove if > end-time
-    - remove if later than existing stop
-- if empty: FINISHED
+    - drop duplicate stops: keep earliest arrival_time
+- walk from the new stops to all possible stops -> new arrival times
+    - remove if arrival time > end-time
+    - drop duplicated stops: keep earliest arrival_time
+- we now have a new list of reachable stops (stop_id, arrival_time)
+- if it is the same as before: FINISHED
 - else:
-    - add to existing stops
-    - restart loop
+    - restart loop with these new selected stops
 
 
 CONCLUDE
 - we have list of (stop, shortest_arrival_time)
-- create circle with walking distance for each
+- create circle with radius = walking distance for each stop (shapely.buffer)
 - add circle from start position
-- merge all circles in a single shape
+- merge all circles in a single shape (shapely.union)
 ```
