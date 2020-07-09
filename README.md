@@ -36,16 +36,6 @@ python run.py server data/orleans/
 
 # Notes
 
-## Dev Todo-list
-
-- [x] prepare data once
-- [x] main function with input params
-- [x] initialize data based on input params
-- [x] find stops and arrival times through network
-- [x] build circle shapes and assemble them
-- [x] build geojson
-- [x] wrap main function with an api
-
 ## Deployment notes
 
 I use uwsgi to run the file `server.py` as explained [here](https://uwsgi-docs.readthedocs.io/en/latest/WSGIquickstart.html).
@@ -62,7 +52,7 @@ server {
 
 	location /gtfs-isochrone/ {
 		# remove this part of the url
-		# rewrite ^/gtfs-isochrone(.*)$ $1 last;
+		rewrite ^/gtfs-isochrone(.*)$ $1 break;
 		include uwsgi_params;
 		uwsgi_pass 127.0.0.1:3031;
 	}
@@ -71,15 +61,6 @@ server {
     # ...
     # listen 443 ...
 }
-```
-
-However in doing so, the bottle server did not recognize the route (which was now `/gtfs-isochrone/isochrone?`). A temporary
-fix was to modify the file `server.py` as follows:
-
-```python
-@app.route("/gtfs-isochrone/isochrone", method="GET")
-def isochrone():
-    ...
 ```
 
 
